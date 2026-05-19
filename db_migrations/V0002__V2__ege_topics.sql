@@ -1,0 +1,1 @@
+CREATE TABLE ege_topics (id SERIAL PRIMARY KEY, title VARCHAR(200) NOT NULL, fipi_number VARCHAR(10) NOT NULL, description TEXT DEFAULT '', icon VARCHAR(10) DEFAULT '📘', sort_order INT DEFAULT 0, is_active BOOLEAN DEFAULT true);

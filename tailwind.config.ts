@@ -70,8 +70,8 @@ export default {
 				sm: 'calc(var(--radius) - 4px)'
 			},
 			fontFamily: {
-				golos: ['Golos Text', 'sans-serif'],
-				montserrat: ['Montserrat', 'sans-serif'],
+				ibm: ['IBM Plex Sans', 'Golos Text', 'system-ui', 'sans-serif'],
+				mono: ['IBM Plex Mono', 'Courier New', 'monospace'],
 			},
 			keyframes: {
 				'accordion-down': {

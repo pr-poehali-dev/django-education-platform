@@ -1,93 +1,66 @@
 import Icon from '@/components/ui/icon';
 
-interface HomePageProps {
-  onNavigate: (page: string) => void;
-}
+interface HomePageProps { onNavigate: (page: string) => void; }
 
-const stats = [
-  { value: '12 000+', label: 'Учеников', icon: 'Users', color: 'purple' },
-  { value: '340+', label: 'Тестов', icon: 'ClipboardList', color: 'cyan' },
-  { value: '98%', label: 'Успешных сдач', icon: 'TrendingUp', color: 'pink' },
-  { value: '8', label: 'Предметов', icon: 'BookOpen', color: 'green' },
-];
-
-const subjects = [
-  { id: 'cs', name: 'Информатика', icon: '💻', topics: 24, tests: 87, color: 'from-violet-600 to-purple-700', badge: 'Популярный' },
-  { id: 'math', name: 'Математика', icon: '📐', topics: 32, tests: 120, color: 'from-cyan-600 to-teal-700', badge: 'Новые темы' },
-  { id: 'physics', name: 'Физика', icon: '⚛️', topics: 18, tests: 64, color: 'from-orange-500 to-red-600', badge: '' },
-  { id: 'chemistry', name: 'Химия', icon: '🧪', topics: 14, tests: 52, color: 'from-green-600 to-emerald-700', badge: '' },
-  { id: 'biology', name: 'Биология', icon: '🧬', topics: 16, tests: 58, color: 'from-pink-600 to-rose-700', badge: '' },
-  { id: 'history', name: 'История', icon: '🏛️', topics: 22, tests: 78, color: 'from-amber-600 to-yellow-600', badge: '' },
+const topics = [
+  { icon: '🔢', label: '№1', title: 'Системы счисления', count: 87 },
+  { icon: '💾', label: '№2', title: 'Кодирование информации', count: 64 },
+  { icon: '⚡', label: '№3', title: 'Логика и логические выражения', count: 92 },
+  { icon: '📊', label: '№5', title: 'Трассировка алгоритмов', count: 78 },
+  { icon: '💻', label: '№6', title: 'Программирование', count: 120 },
+  { icon: '🌐', label: '№9', title: 'Сети и протоколы', count: 55 },
 ];
 
 const features = [
-  { icon: 'Zap', title: 'Мгновенная проверка', desc: 'Результат сразу после теста с детальным разбором ошибок', color: 'text-yellow-400' },
-  { icon: 'Trophy', title: 'Рейтинг и достижения', desc: 'Соревнуйся с другими учениками и собирай награды', color: 'text-orange-400' },
-  { icon: 'BarChart2', title: 'Аналитика прогресса', desc: 'Подробная статистика успеваемости по каждой теме', color: 'text-cyan-400' },
-  { icon: 'BookMarked', title: 'Разборы и теория', desc: 'К каждому тесту прилагаются учебные материалы', color: 'text-purple-400' },
+  { icon: 'CheckCircle', title: 'Формат ФИПИ', desc: 'Все задания соответствуют актуальному кодификатору ЕГЭ по информатике' },
+  { icon: 'Zap', title: 'Мгновенная проверка', desc: 'Результат и подробный разбор ошибок сразу после ответа' },
+  { icon: 'BarChart2', title: 'Статистика прогресса', desc: 'Личный кабинет с историей попыток и аналитикой по темам' },
+  { icon: 'BookOpen', title: 'Авторские тесты', desc: 'Учителя публикуют собственные варианты заданий для учеников' },
 ];
 
 export default function HomePage({ onNavigate }: HomePageProps) {
   return (
-    <div className="min-h-screen">
+    <div>
       {/* Hero */}
-      <section className="relative pt-32 pb-20 px-4 overflow-hidden grid-bg">
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-10 right-1/4 w-64 h-64 bg-cyan-500/10 rounded-full blur-3xl" style={{ animationDelay: '1.5s' }} />
-        </div>
-
-        <div className="max-w-5xl mx-auto text-center relative z-10 animate-fade-in">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm font-medium mb-6">
-            <Icon name="Sparkles" size={14} />
-            Подготовка к ЕГЭ и ОГЭ
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-14">
+        <div className="max-w-2xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-50 border border-blue-200 rounded-full text-blue-700 text-xs font-medium mb-6">
+            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block"></span>
+            Подготовка к ЕГЭ 2025 · Информатика · Формат ФИПИ
           </div>
-
-          <h1 className="font-montserrat font-black text-5xl sm:text-6xl lg:text-7xl leading-none mb-6">
-            <span className="text-white">Учись.</span>{' '}
-            <span className="gradient-text">Тестируйся.</span>
-            <br />
-            <span className="text-white">Побеждай.</span>
+          <h1 className="text-4xl sm:text-5xl font-semibold text-gray-900 leading-tight mb-5 tracking-tight">
+            Тренажёр ЕГЭ<br />
+            <span className="text-blue-600">по информатике</span>
           </h1>
-
-          <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-10 leading-relaxed">
-            Интерактивная платформа для подготовки к экзаменам. Тысячи тестов с мгновенной автопроверкой,
-            разборами ошибок и личной статистикой.
+          <p className="text-lg text-gray-500 mb-8 leading-relaxed max-w-lg">
+            Задания в точном формате ФИПИ, автопроверка с разбором решений, личная статистика и авторские тесты от учителей.
           </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              onClick={() => onNavigate('tests')}
-              className="px-8 py-4 rounded-xl btn-neon-purple font-semibold text-base font-montserrat flex items-center justify-center gap-2"
-            >
-              <Icon name="Play" size={18} />
+          <div className="flex gap-3 flex-wrap">
+            <button onClick={() => onNavigate('tests')}
+              className="px-5 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+              <Icon name="Play" size={15} />
               Начать тренировку
             </button>
-            <button
-              onClick={() => onNavigate('cabinet')}
-              className="px-8 py-4 rounded-xl border border-white/10 text-white font-semibold text-base hover:bg-white/5 transition-all flex items-center justify-center gap-2"
-            >
-              <Icon name="UserPlus" size={18} />
-              Зарегистрироваться
+            <button onClick={() => onNavigate('topics')}
+              className="px-5 py-2.5 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors">
+              Все темы ЕГЭ
             </button>
           </div>
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="py-12 px-4 border-y border-white/5">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((s) => (
-              <div key={s.label} className="text-center">
-                <div className={`text-3xl font-montserrat font-black mb-1 ${
-                  s.color === 'purple' ? 'gradient-text' :
-                  s.color === 'cyan' ? 'neon-text-cyan' :
-                  s.color === 'pink' ? 'gradient-text-pink' :
-                  'text-green-400'
-                }`}>
-                  {s.value}
-                </div>
+      {/* Stats strip */}
+      <section className="border-y border-gray-100 bg-gray-50">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-7">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+            {[
+              { val: '27', label: 'Тем кодификатора' },
+              { val: '1 200+', label: 'Заданий ФИПИ' },
+              { val: '2025', label: 'Актуальный год' },
+              { val: '24/7', label: 'Доступность' },
+            ].map(s => (
+              <div key={s.label}>
+                <div className="text-2xl font-semibold text-gray-900 mb-0.5">{s.val}</div>
                 <div className="text-sm text-gray-500">{s.label}</div>
               </div>
             ))}
@@ -95,67 +68,43 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
-      {/* Subjects */}
-      <section className="py-16 px-4">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-montserrat font-bold text-3xl text-white mb-3">
-              Выбери <span className="gradient-text">предмет</span>
-            </h2>
-            <p className="text-gray-500">8 предметов, сотни тестов для любого уровня</p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {subjects.map((subj) => (
-              <button
-                key={subj.id}
-                onClick={() => onNavigate(subj.id === 'cs' ? 'cs' : 'tests')}
-                className="card-glass rounded-2xl p-6 text-left transition-all duration-300 card-glow-purple group border border-white/5"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${subj.color} flex items-center justify-center text-2xl`}>
-                    {subj.icon}
-                  </div>
-                  {subj.badge && (
-                    <span className="text-xs px-2 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/20">
-                      {subj.badge}
-                    </span>
-                  )}
-                </div>
-                <h3 className="font-montserrat font-bold text-white text-lg mb-2 group-hover:gradient-text transition-all">
-                  {subj.name}
-                </h3>
-                <div className="flex gap-4 text-sm text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <Icon name="BookOpen" size={13} />
-                    {subj.topics} тем
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Icon name="ClipboardList" size={13} />
-                    {subj.tests} тестов
-                  </span>
-                </div>
-              </button>
-            ))}
-          </div>
+      {/* Topics */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-lg font-semibold text-gray-900">Популярные темы</h2>
+          <button onClick={() => onNavigate('topics')} className="text-sm text-blue-600 hover:text-blue-700 font-medium">
+            Все темы →
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {topics.map(t => (
+            <button key={t.label} onClick={() => onNavigate('tests')}
+              className="flex items-center gap-3 p-4 bg-white border border-gray-200 rounded-xl hover:border-blue-300 hover:shadow-sm transition-all duration-150 text-left group">
+              <div className="text-xl w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0 border border-gray-100">
+                {t.icon}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-xs text-blue-600 font-medium mb-0.5">Задание {t.label}</div>
+                <div className="text-sm font-medium text-gray-900 truncate">{t.title}</div>
+                <div className="text-xs text-gray-400 mt-0.5">{t.count} заданий</div>
+              </div>
+              <Icon name="ChevronRight" size={15} className="text-gray-300 group-hover:text-blue-400 transition-colors flex-shrink-0" />
+            </button>
+          ))}
         </div>
       </section>
 
       {/* Features */}
-      <section className="py-16 px-4 border-t border-white/5">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="font-montserrat font-bold text-3xl text-white mb-3">
-              Почему выбирают <span className="gradient-text">КодГрад</span>
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((f) => (
-              <div key={f.title} className="card-glass rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-all">
-                <div className={`${f.color} mb-4`}>
-                  <Icon name={f.icon} size={28} />
+      <section className="bg-gray-50 border-t border-gray-100">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+          <h2 className="text-lg font-semibold text-gray-900 mb-6">Возможности платформы</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {features.map(f => (
+              <div key={f.title} className="bg-white p-5 rounded-xl border border-gray-200">
+                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center mb-3">
+                  <Icon name={f.icon} size={16} className="text-blue-600" />
                 </div>
-                <h3 className="font-montserrat font-semibold text-white mb-2">{f.title}</h3>
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">{f.title}</h3>
                 <p className="text-sm text-gray-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
@@ -163,22 +112,22 @@ export default function HomePage({ onNavigate }: HomePageProps) {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 px-4">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="card-glass rounded-3xl p-12 border border-purple-500/20 relative overflow-hidden animate-pulse-glow">
-            <div className="absolute inset-0 gradient-purple-cyan opacity-5 rounded-3xl" />
-            <h2 className="font-montserrat font-black text-3xl text-white mb-4 relative z-10">
-              Готов к экзамену?
-            </h2>
-            <p className="text-gray-400 mb-8 relative z-10">Зарегистрируйся и начни подготовку прямо сейчас</p>
-            <button
-              onClick={() => onNavigate('cabinet')}
-              className="px-10 py-4 rounded-xl btn-neon-purple font-semibold font-montserrat relative z-10"
-            >
-              Начать бесплатно
-            </button>
+      {/* Teacher CTA */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <div className="bg-blue-600 rounded-2xl p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div>
+            <div className="badge-blue mb-3" style={{ background: 'rgba(255,255,255,0.2)', color: 'white', borderColor: 'rgba(255,255,255,0.3)' }}>
+              Для учителей
+            </div>
+            <h2 className="text-white text-lg font-semibold mb-1.5">Публикуйте авторские тесты</h2>
+            <p className="text-blue-100 text-sm leading-relaxed max-w-md">
+              Создайте кабинет учителя и добавляйте собственные задания в формате ФИПИ. Ваши ученики смогут тренироваться по вашим вариантам.
+            </p>
           </div>
+          <button onClick={() => onNavigate('register')}
+            className="flex-shrink-0 px-5 py-2.5 bg-white text-blue-700 text-sm font-semibold rounded-lg hover:bg-blue-50 transition-colors whitespace-nowrap">
+            Зарегистрироваться как учитель →
+          </button>
         </div>
       </section>
     </div>
