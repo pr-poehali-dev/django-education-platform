@@ -1,28 +1,46 @@
+import { useState } from 'react';
+import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
+import HomePage from '@/pages/HomePage';
+import CSPage from '@/pages/CSPage';
+import TestsPage from '@/pages/TestsPage';
+import CabinetPage from '@/pages/CabinetPage';
+import AdminPage from '@/pages/AdminPage';
+import AboutPage from '@/pages/AboutPage';
+import ContactsPage from '@/pages/ContactsPage';
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
+type Page = 'home' | 'cs' | 'tests' | 'cabinet' | 'admin' | 'about' | 'contacts';
 
-const queryClient = new QueryClient();
+const noFooterPages: Page[] = ['admin'];
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+export default function App() {
+  const [page, setPage] = useState<Page>('home');
 
-export default App;
+  const navigate = (p: string) => {
+    setPage(p as Page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const renderPage = () => {
+    switch (page) {
+      case 'home': return <HomePage onNavigate={navigate} />;
+      case 'cs': return <CSPage onNavigate={navigate} />;
+      case 'tests': return <TestsPage />;
+      case 'cabinet': return <CabinetPage />;
+      case 'admin': return <AdminPage />;
+      case 'about': return <AboutPage />;
+      case 'contacts': return <ContactsPage />;
+      default: return <HomePage onNavigate={navigate} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen font-golos">
+      <Navbar currentPage={page} onNavigate={navigate} />
+      <main key={page} className="animate-fade-in">
+        {renderPage()}
+      </main>
+      {!noFooterPages.includes(page) && <Footer onNavigate={navigate} />}
+    </div>
+  );
+}
