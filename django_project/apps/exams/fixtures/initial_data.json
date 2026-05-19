@@ -1,0 +1,84 @@
+[
+  {"model": "exams.topic", "pk": 1, "fields": {"title": "Системы счисления", "slug": "sistemy-schisleniya", "description": "Перевод чисел между системами счисления. Двоичная арифметика. Шестнадцатеричная система.", "order": 1, "icon": "🔢", "fipi_number": "№1"}},
+  {"model": "exams.topic", "pk": 2, "fields": {"title": "Информация и её кодирование", "slug": "informaciya-i-kodirovanie", "description": "Единицы измерения информации. Кодирование текста, изображений, звука.", "order": 2, "icon": "💾", "fipi_number": "№2"}},
+  {"model": "exams.topic", "pk": 3, "fields": {"title": "Логика и логические выражения", "slug": "logika", "description": "Логические операции. Таблицы истинности. Логические схемы. Формулы.", "order": 3, "icon": "⚡", "fipi_number": "№3"}},
+  {"model": "exams.topic", "pk": 4, "fields": {"title": "Алгоритмы и трассировка", "slug": "algoritmy", "description": "Трассировка алгоритмов. Подсчёт значений переменных. Блок-схемы.", "order": 4, "icon": "📊", "fipi_number": "№5"}},
+  {"model": "exams.topic", "pk": 5, "fields": {"title": "Программирование", "slug": "programmirovanie", "description": "Базовые конструкции языков программирования. Массивы. Строки. Рекурсия.", "order": 5, "icon": "💻", "fipi_number": "№6"}},
+  {"model": "exams.topic", "pk": 6, "fields": {"title": "Сети и протоколы", "slug": "seti", "description": "IP-адресация. Маски подсети. Пропускная способность. DNS.", "order": 6, "icon": "🌐", "fipi_number": "№9"}},
+
+  {"model": "exams.question", "pk": 1, "fields": {"topic": 1, "text": "Переведите число 42 из десятичной системы счисления в двоичную.", "image": null, "code_snippet": "", "question_type": "single", "difficulty": "easy", "explanation": "42 = 32+8+2 = 2⁵+2³+2¹ = 101010₂. Метод: делим на 2, записываем остатки снизу вверх: 42→21 ост.0, 21→10 ост.1, 10→5 ост.0, 5→2 ост.1, 2→1 ост.0, 1→0 ост.1. Читаем снизу: 101010.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 1, "fields": {"question": 1, "text": "101010₂", "is_correct": true, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 2, "fields": {"question": 1, "text": "100101₂", "is_correct": false, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 3, "fields": {"question": 1, "text": "110100₂", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 4, "fields": {"question": 1, "text": "101000₂", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 2, "fields": {"topic": 1, "text": "Чему равно число FF₁₆ в десятичной системе счисления?", "image": null, "code_snippet": "", "question_type": "single", "difficulty": "easy", "explanation": "FF₁₆ = 15·16¹ + 15·16⁰ = 240 + 15 = 255.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 5, "fields": {"question": 2, "text": "240", "is_correct": false, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 6, "fields": {"question": 2, "text": "255", "is_correct": true, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 7, "fields": {"question": 2, "text": "256", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 8, "fields": {"question": 2, "text": "248", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 3, "fields": {"topic": 1, "text": "Результат вычисления 1011₂ + 0110₂ в двоичной системе:", "image": null, "code_snippet": "", "question_type": "single", "difficulty": "medium", "explanation": "1011 + 0110: 1+0=1, 1+1=10 (0 перенос 1), 0+1+1=10 (0 перенос 1), 1+0+1=10. Итого: 10001₂. Проверка: 11+6=17=10001₂.", "fipi_source": "ФИПИ 2022", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 9, "fields": {"question": 3, "text": "10001₂", "is_correct": true, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 10, "fields": {"question": 3, "text": "10101₂", "is_correct": false, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 11, "fields": {"question": 3, "text": "1111₂", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 12, "fields": {"question": 3, "text": "11001₂", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 4, "fields": {"topic": 2, "text": "Файл содержит 4096 байт. Сколько это килобайт?", "image": null, "code_snippet": "", "question_type": "single", "difficulty": "easy", "explanation": "1 КБ = 1024 байт. 4096 / 1024 = 4 КБ.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 13, "fields": {"question": 4, "text": "2 КБ", "is_correct": false, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 14, "fields": {"question": 4, "text": "4 КБ", "is_correct": true, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 15, "fields": {"question": 4, "text": "8 КБ", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 16, "fields": {"question": 4, "text": "16 КБ", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 5, "fields": {"topic": 2, "text": "Растровое изображение 800×600 пикселей, 24 бит на пиксель. Каков размер файла в байтах без сжатия?", "image": null, "code_snippet": "", "question_type": "single", "difficulty": "medium", "explanation": "Размер = ширина × высота × глубина цвета / 8 = 800 × 600 × 24 / 8 = 800 × 600 × 3 = 1 440 000 байт.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 17, "fields": {"question": 5, "text": "480 000 байт", "is_correct": false, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 18, "fields": {"question": 5, "text": "1 440 000 байт", "is_correct": true, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 19, "fields": {"question": 5, "text": "2 880 000 байт", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 20, "fields": {"question": 5, "text": "960 000 байт", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 6, "fields": {"topic": 3, "text": "Чему равно выражение: (1 AND 0) OR (NOT 1)?", "image": null, "code_snippet": "", "question_type": "single", "difficulty": "easy", "explanation": "1 AND 0 = 0; NOT 1 = 0; 0 OR 0 = 0.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 21, "fields": {"question": 6, "text": "0", "is_correct": true, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 22, "fields": {"question": 6, "text": "1", "is_correct": false, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 23, "fields": {"question": 6, "text": "Неопределено", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 24, "fields": {"question": 6, "text": "−1", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 7, "fields": {"topic": 3, "text": "Сколько единиц в таблице истинности выражения A AND (A OR B)?", "image": null, "code_snippet": "", "question_type": "single", "difficulty": "medium", "explanation": "A AND (A OR B) = A (по законам поглощения). Таблица истинности для 2 переменных имеет 4 строки. Единица стоит там, где A=1, то есть в 2 строках.", "fipi_source": "ФИПИ 2022", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 25, "fields": {"question": 7, "text": "1", "is_correct": false, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 26, "fields": {"question": 7, "text": "2", "is_correct": true, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 27, "fields": {"question": 7, "text": "3", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 28, "fields": {"question": 7, "text": "4", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 8, "fields": {"topic": 4, "text": "Какое значение примет переменная x после выполнения фрагмента?\n\nx = 5\nif x > 3:\n    x = x * 2\nelse:\n    x = x + 1", "image": null, "code_snippet": "x = 5\nif x > 3:\n    x = x * 2\nelse:\n    x = x + 1\nprint(x)", "question_type": "single", "difficulty": "easy", "explanation": "x = 5, условие 5 > 3 истинно, поэтому выполняется x = 5 * 2 = 10.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 29, "fields": {"question": 8, "text": "6", "is_correct": false, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 30, "fields": {"question": 8, "text": "10", "is_correct": true, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 31, "fields": {"question": 8, "text": "5", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 32, "fields": {"question": 8, "text": "11", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 9, "fields": {"topic": 4, "text": "Определите значение переменной s после выполнения программы:", "image": null, "code_snippet": "s = 0\nfor i in range(1, 6):\n    s = s + i\nprint(s)", "question_type": "single", "difficulty": "easy", "explanation": "Цикл суммирует числа 1+2+3+4+5 = 15.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 33, "fields": {"question": 9, "text": "10", "is_correct": false, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 34, "fields": {"question": 9, "text": "15", "is_correct": true, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 35, "fields": {"question": 9, "text": "14", "is_correct": false, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 36, "fields": {"question": 9, "text": "21", "is_correct": false, "order": 4}},
+
+  {"model": "exams.question", "pk": 10, "fields": {"topic": 5, "text": "Что выведет следующий код?", "image": null, "code_snippet": "def f(n):\n    if n <= 1:\n        return 1\n    return n * f(n - 1)\n\nprint(f(5))", "question_type": "single", "difficulty": "medium", "explanation": "Функция f(n) вычисляет факториал: f(5) = 5! = 5×4×3×2×1 = 120.", "fipi_source": "ФИПИ 2023", "points": 1, "is_active": true}},
+  {"model": "exams.answerchoice", "pk": 37, "fields": {"question": 10, "text": "24", "is_correct": false, "order": 1}},
+  {"model": "exams.answerchoice", "pk": 38, "fields": {"question": 10, "text": "60", "is_correct": false, "order": 2}},
+  {"model": "exams.answerchoice", "pk": 39, "fields": {"question": 10, "text": "120", "is_correct": true, "order": 3}},
+  {"model": "exams.answerchoice", "pk": 40, "fields": {"question": 10, "text": "25", "is_correct": false, "order": 4}},
+
+  {"model": "exams.test", "pk": 1, "fields": {"title": "Тематический тест: Системы счисления", "slug": "sistemy-schisleniya-test", "description": "Задания по переводу чисел и арифметике в различных системах счисления. Соответствует заданию №1 ЕГЭ.", "test_type": "topic", "time_limit": 20, "is_active": true}},
+  {"model": "exams.testquestion", "pk": 1, "fields": {"test": 1, "question": 1, "order": 1}},
+  {"model": "exams.testquestion", "pk": 2, "fields": {"test": 1, "question": 2, "order": 2}},
+  {"model": "exams.testquestion", "pk": 3, "fields": {"test": 1, "question": 3, "order": 3}},
+
+  {"model": "exams.test", "pk": 2, "fields": {"title": "Тематический тест: Информация и кодирование", "slug": "informaciya-test", "description": "Задания на вычисление объёма информации, единицы измерения, кодирование.", "test_type": "topic", "time_limit": 20, "is_active": true}},
+  {"model": "exams.testquestion", "pk": 4, "fields": {"test": 2, "question": 4, "order": 1}},
+  {"model": "exams.testquestion", "pk": 5, "fields": {"test": 2, "question": 5, "order": 2}},
+
+  {"model": "exams.test", "pk": 3, "fields": {"title": "Тренировочный вариант ЕГЭ №1", "slug": "trenirovochny-variant-1", "description": "Тренировочный вариант с заданиями из всех разделов кодификатора ЕГЭ по информатике.", "test_type": "training", "time_limit": 45, "is_active": true}},
+  {"model": "exams.testquestion", "pk": 6, "fields": {"test": 3, "question": 1, "order": 1}},
+  {"model": "exams.testquestion", "pk": 7, "fields": {"test": 3, "question": 4, "order": 2}},
+  {"model": "exams.testquestion", "pk": 8, "fields": {"test": 3, "question": 6, "order": 3}},
+  {"model": "exams.testquestion", "pk": 9, "fields": {"test": 3, "question": 8, "order": 4}},
+  {"model": "exams.testquestion", "pk": 10, "fields": {"test": 3, "question": 10, "order": 5}}
+]

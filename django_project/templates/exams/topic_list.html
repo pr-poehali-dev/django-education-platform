@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}Темы ЕГЭ по информатике — КодГрад{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Темы <span class="gradient-text">ЕГЭ</span> по информатике</h1>
+        <p class="page-desc">Все задания в формате ФИПИ, разбитые по темам кодификатора</p>
+    </div>
+</div>
+
+<div class="container section">
+    <div class="topics-full-grid">
+        {% for topic in topics %}
+        <a href="{% url 'topic_detail' topic.slug %}" class="topic-card-full">
+            <div class="topic-card-left">
+                <div class="topic-icon-lg">{{ topic.icon }}</div>
+            </div>
+            <div class="topic-card-body">
+                <div class="topic-fipi">Задание {{ topic.fipi_number }}</div>
+                <h3 class="topic-title">{{ topic.title }}</h3>
+                <p class="topic-desc-text">{{ topic.description|truncatechars:100 }}</p>
+            </div>
+            <div class="topic-card-right">
+                <span class="q-count">{{ topic.questions_count }}</span>
+                <span class="q-label">заданий</span>
+                <span class="arrow-btn">→</span>
+            </div>
+        </a>
+        {% empty %}
+        <div class="empty-state">
+            <p>Темы ещё не добавлены. <a href="/admin/exams/topic/add/">Добавить через админку →</a></p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

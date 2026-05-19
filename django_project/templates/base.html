@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}КодГрад — ЕГЭ Информатика{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800;900&family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav class="navbar">
+    <div class="container navbar-inner">
+        <a href="{% url 'home' %}" class="navbar-brand">
+            <div class="brand-icon">КГ</div>
+            <span class="brand-name">КодГрад</span>
+        </a>
+        <div class="navbar-menu">
+            <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">Главная</a>
+            <a href="{% url 'topic_list' %}" class="nav-link {% if 'topic' in request.resolver_match.url_name %}active{% endif %}">Темы ЕГЭ</a>
+            <a href="{% url 'test_list' %}" class="nav-link {% if 'test' in request.resolver_match.url_name %}active{% endif %}">Тесты</a>
+            <a href="{% url 'leaderboard' %}" class="nav-link">Рейтинг</a>
+        </div>
+        <div class="navbar-auth">
+            {% if user.is_authenticated %}
+                <a href="{% url 'cabinet' %}" class="btn btn-ghost">{{ user.first_name|default:user.username }}</a>
+                <a href="{% url 'logout' %}" class="btn btn-outline">Выйти</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-ghost">Войти</a>
+                <a href="{% url 'register' %}" class="btn btn-primary">Регистрация</a>
+            {% endif %}
+        </div>
+        <button class="burger" onclick="toggleMenu()">☰</button>
+    </div>
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="{% url 'home' %}">Главная</a>
+        <a href="{% url 'topic_list' %}">Темы ЕГЭ</a>
+        <a href="{% url 'test_list' %}">Тесты</a>
+        <a href="{% url 'leaderboard' %}">Рейтинг</a>
+        {% if user.is_authenticated %}
+            <a href="{% url 'cabinet' %}">Кабинет</a>
+            <a href="{% url 'logout' %}">Выйти</a>
+        {% else %}
+            <a href="{% url 'login' %}">Войти</a>
+            <a href="{% url 'register' %}">Регистрация</a>
+        {% endif %}
+    </div>
+</nav>
+
+<main>
+    {% if messages %}
+        <div class="messages-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+    <div class="container footer-inner">
+        <div class="footer-brand">
+            <div class="brand-icon">КГ</div>
+            <span class="brand-name">КодГрад</span>
+        </div>
+        <p class="footer-desc">Подготовка к ЕГЭ по информатике в формате ФИПИ</p>
+        <div class="footer-links">
+            <a href="{% url 'home' %}">Главная</a>
+            <a href="{% url 'topic_list' %}">Темы</a>
+            <a href="{% url 'test_list' %}">Тесты</a>
+            <a href="{% url 'about' %}">О нас</a>
+        </div>
+        <p class="footer-copy">© 2024 КодГрад. Все права защищены.</p>
+    </div>
+</footer>
+
+<script>
+function toggleMenu() {
+    document.getElementById('mobileMenu').classList.toggle('open');
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Личный кабинет — КодГрад{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Личный <span class="gradient-text">кабинет</span></h1>
+    </div>
+</div>
+
+<div class="container section">
+    <div class="cabinet-grid">
+        <!-- Profile card -->
+        <div class="cabinet-sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" alt="Аватар">
+                    {% else %}
+                        <div class="avatar-placeholder">{{ user.first_name.0|default:user.username.0|upper }}</div>
+                    {% endif %}
+                </div>
+                <h2 class="profile-name">{{ user.get_full_name|default:user.username }}</h2>
+                <p class="profile-meta">{{ user.email }}</p>
+                {% if user.grade %}<p class="profile-grade">{{ user.get_grade_display }}</p>{% endif %}
+                {% if user.city %}<p class="profile-city">📍 {{ user.city }}</p>{% endif %}
+                {% if user.bio %}<p class="profile-bio">{{ user.bio }}</p>{% endif %}
+
+                <div class="profile-stats">
+                    <div class="profile-stat">
+                        <span class="stat-val gradient-text">{{ user.total_score }}</span>
+                        <span class="stat-lbl">Баллов</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-val gradient-text">{{ user.tests_count }}</span>
+                        <span class="stat-lbl">Тестов</span>
+                    </div>
+                    <div class="profile-stat">
+                        <span class="stat-val gradient-text">{{ user.avg_score }}%</span>
+                        <span class="stat-lbl">Средний</span>
+                    </div>
+                </div>
+
+                <a href="{% url 'profile_edit' %}" class="btn btn-outline btn-full btn-sm">✏️ Редактировать</a>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="cabinet-main">
+            <h2 class="cabinet-section-title">История тестов</h2>
+            {% if attempts %}
+            <div class="history-list">
+                {% for attempt in attempts %}
+                <a href="{% url 'result' attempt.id %}" class="history-row">
+                    <div class="history-left">
+                        <div class="history-test">{{ attempt.test.title }}</div>
+                        <div class="history-date">{{ attempt.finished_at|date:"d M Y, H:i" }}</div>
+                    </div>
+                    <div class="history-right">
+                        <div class="history-score {% if attempt.percent >= 70 %}good{% elif attempt.percent >= 50 %}ok{% else %}bad{% endif %}">
+                            {{ attempt.score }}/{{ attempt.max_score }}
+                        </div>
+                        <div class="history-percent">{{ attempt.percent }}%</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <p>Ты ещё не прошёл ни одного теста.</p>
+                <a href="{% url 'test_list' %}" class="btn btn-primary">Перейти к тестам →</a>
+            </div>
+            {% endif %}
+
+            <a href="{% url 'test_list' %}" class="btn btn-outline btn-lg" style="margin-top:2rem;">
+                + Пройти новый тест
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

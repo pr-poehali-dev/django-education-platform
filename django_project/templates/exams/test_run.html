@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% block title %}{{ attempt.test.title }} — Вопрос {{ question_number }}{% endblock %}
+
+{% block content %}
+<div class="quiz-shell">
+    <!-- Progress bar -->
+    <div class="quiz-progress-bar">
+        <div class="quiz-progress-fill" style="width: {{ progress_percent }}%"></div>
+    </div>
+
+    <div class="quiz-header container">
+        <div class="quiz-header-left">
+            <a href="{% url 'test_detail' attempt.test.slug %}" class="btn btn-ghost btn-sm"
+               onclick="return confirm('Выйти? Прогресс не сохранится.')">✕ Выйти</a>
+            <span class="quiz-test-name">{{ attempt.test.title }}</span>
+        </div>
+        <div class="quiz-counter">
+            <span class="quiz-answered">{{ answered_count }}</span> / {{ total_questions }}
+        </div>
+    </div>
+
+    {% if question %}
+    <div class="quiz-body container" id="quizBody">
+        <div class="question-number">Задание {{ question_number }} из {{ total_questions }}</div>
+
+        {% if question.topic.fipi_number %}
+        <div class="question-fipi-tag">{{ question.topic.icon }} {{ question.topic.fipi_number }} — {{ question.topic.title }}</div>
+        {% endif %}
+
+        <div class="question-text">{{ question.text }}</div>
+
+        {% if question.image %}
+        <div class="question-image">
+            <img src="{{ question.image.url }}" alt="Иллюстрация к заданию">
+        </div>
+        {% endif %}
+
+        {% if question.code_snippet %}
+        <pre class="code-block"><code>{{ question.code_snippet }}</code></pre>
+        {% endif %}
+
+        <!-- Варианты ответа -->
+        <div class="choices-list" id="choicesList">
+            {% if question.question_type == 'single' or question.question_type == 'multiple' %}
+                {% for choice in question.choices.all %}
+                <button class="choice-btn" data-choice-id="{{ choice.id }}"
+                    onclick="selectChoice(this, '{{ question.question_type }}')">
+                    <span class="choice-letter">{{ forloop.counter0|add:0|floatformat:0 }}</span>
+                    <span class="choice-text">{{ choice.text }}</span>
+                </button>
+                {% endfor %}
+            {% elif question.question_type == 'number' %}
+                <div class="text-answer-wrap">
+                    <input type="number" id="textAnswerInput" class="text-answer-input" placeholder="Введите число">
+                </div>
+            {% elif question.question_type == 'text' %}
+                <div class="text-answer-wrap">
+                    <input type="text" id="textAnswerInput" class="text-answer-input" placeholder="Введите ответ">
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Explanation (hidden) -->
+        <div class="explanation-box" id="explanationBox" style="display:none"></div>
+
+        <!-- Actions -->
+        <div class="quiz-actions">
+            <button class="btn btn-primary btn-lg" id="submitBtn" onclick="submitAnswer()">
+                Проверить ответ
+            </button>
+            <button class="btn btn-outline btn-lg" id="nextBtn" onclick="nextQuestion()" style="display:none">
+                {% if question_number == total_questions %}Завершить тест{% else %}Следующий →{% endif %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Sidebar: navigation -->
+    <div class="quiz-nav container" id="quizNav">
+        <div class="quiz-nav-grid">
+            {% for q in questions %}
+            <span class="nav-dot {% if q.id in answered_ids %}answered{% endif %} {% if q.id == question.id %}current{% endif %}"
+                  title="{{ forloop.counter }}">{{ forloop.counter }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="container" style="padding:4rem 0; text-align:center;">
+        <p>Все задания отвечены!</p>
+        <button class="btn btn-primary btn-lg" onclick="finishTest()">Завершить и получить результат</button>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const ATTEMPT_ID = {{ attempt.id }};
+const QUESTION_ID = {{ question.id|default:0 }};
+const QUESTION_TYPE = "{{ question.question_type|default:'' }}";
+const CSRF_TOKEN = "{{ csrf_token }}";
+const IS_LAST = {{ question_number }} === {{ total_questions }};
+
+let selectedChoices = [];
+let answered = false;
+
+const LETTERS = ['А', 'Б', 'В', 'Г', 'Д', 'Е', 'Ж', 'З'];
+document.querySelectorAll('.choice-letter').forEach((el, i) => { el.textContent = LETTERS[i] || i+1; });
+
+function selectChoice(btn, type) {
+    if (answered) return;
+    if (type === 'single') {
+        document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+        selectedChoices = [parseInt(btn.dataset.choiceId)];
+    } else {
+        btn.classList.toggle('selected');
+        const id = parseInt(btn.dataset.choiceId);
+        if (btn.classList.contains('selected')) {
+            selectedChoices.push(id);
+        } else {
+            selectedChoices = selectedChoices.filter(c => c !== id);
+        }
+    }
+    btn.classList.toggle('selected', QUESTION_TYPE === 'single' || btn.classList.contains('selected'));
+    if (QUESTION_TYPE === 'single') btn.classList.add('selected');
+    document.getElementById('submitBtn').disabled = selectedChoices.length === 0;
+}
+
+async function submitAnswer() {
+    if (answered) return;
+    answered = true;
+
+    let body = { question_id: QUESTION_ID };
+    if (QUESTION_TYPE === 'single' || QUESTION_TYPE === 'multiple') {
+        body.choice_ids = selectedChoices;
+    } else {
+        body.text_answer = document.getElementById('textAnswerInput')?.value || '';
+    }
+
+    const resp = await fetch(`/exams/attempt/${ATTEMPT_ID}/answer/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF_TOKEN },
+        body: JSON.stringify(body)
+    });
+    const data = await resp.json();
+
+    document.querySelectorAll('.choice-btn').forEach(btn => {
+        const id = parseInt(btn.dataset.choiceId);
+        if (data.correct_choices.includes(id)) btn.classList.add('correct');
+        else if (selectedChoices.includes(id)) btn.classList.add('wrong');
+        btn.disabled = true;
+    });
+
+    if (data.explanation) {
+        const box = document.getElementById('explanationBox');
+        box.style.display = 'block';
+        box.innerHTML = `<div class="expl-icon">${data.is_correct ? '✅' : '❌'}</div>
+            <div><strong>${data.is_correct ? 'Верно!' : 'Неверно.'}</strong>${data.explanation ? ' ' + data.explanation : ''}</div>`;
+        box.className = 'explanation-box ' + (data.is_correct ? 'correct' : 'wrong');
+    }
+
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('nextBtn').style.display = 'inline-flex';
+}
+
+function nextQuestion() {
+    window.location.reload();
+}
+
+async function finishTest() {
+    const resp = await fetch(`/exams/attempt/${ATTEMPT_ID}/finish/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF_TOKEN }
+    });
+    const data = await resp.json();
+    if (data.redirect) window.location.href = data.redirect;
+}
+
+document.getElementById('submitBtn').disabled = (QUESTION_TYPE === 'single' || QUESTION_TYPE === 'multiple');
+
+if (IS_LAST && {{ answered_count }} === {{ total_questions }} - 1) {
+    document.getElementById('nextBtn').textContent = 'Завершить тест';
+    document.getElementById('nextBtn').onclick = finishTest;
+}
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}{{ test.title }} — КодГрад{% endblock %}
+
+{% block content %}
+<div class="container section">
+    <a href="{% url 'test_list' %}" class="back-link">← Все тесты</a>
+
+    <div class="test-detail-grid">
+        <div class="test-detail-main">
+            <div class="test-detail-head">
+                <span class="test-type-badge">{{ test.get_test_type_display }}</span>
+                <h1 class="test-detail-title">{{ test.title }}</h1>
+                {% if test.description %}<p class="test-detail-desc">{{ test.description }}</p>{% endif %}
+            </div>
+
+            <div class="test-info-cards">
+                <div class="info-card">
+                    <span class="info-value">{{ test.questions_count }}</span>
+                    <span class="info-label">Заданий</span>
+                </div>
+                {% if test.time_limit %}
+                <div class="info-card">
+                    <span class="info-value">{{ test.time_limit }}</span>
+                    <span class="info-label">Минут</span>
+                </div>
+                {% endif %}
+                <div class="info-card">
+                    <span class="info-value">{{ test.attempts_count }}</span>
+                    <span class="info-label">Попыток</span>
+                </div>
+                <div class="info-card">
+                    <span class="info-value {% if test.avg_percent >= 70 %}text-green{% elif test.avg_percent >= 50 %}text-yellow{% else %}text-red{% endif %}">
+                        {{ test.avg_percent }}%
+                    </span>
+                    <span class="info-label">Средний балл</span>
+                </div>
+            </div>
+
+            <div class="test-topics">
+                <h3>Темы в тесте:</h3>
+                <div class="topic-tags">
+                    {% for topic in test.topics.all %}
+                    <a href="{% url 'topic_detail' topic.slug %}" class="topic-tag">
+                        {{ topic.icon }} {{ topic.fipi_number }} {{ topic.title }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'test_start' test.slug %}" class="btn btn-primary btn-lg btn-full">
+                    🚀 Начать тест
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}?next={% url 'test_detail' test.slug %}" class="btn btn-primary btn-lg btn-full">
+                    Войди, чтобы пройти тест
+                </a>
+            {% endif %}
+        </div>
+
+        {% if user_attempts %}
+        <div class="test-detail-sidebar">
+            <h3 class="sidebar-title">Твои результаты</h3>
+            {% for attempt in user_attempts %}
+            <a href="{% url 'result' attempt.id %}" class="attempt-row">
+                <div>
+                    <div class="attempt-date">{{ attempt.finished_at|date:"d M Y" }}</div>
+                    <div class="attempt-grade">{{ attempt.grade_label }}</div>
+                </div>
+                <div class="attempt-score {% if attempt.percent >= 70 %}good{% elif attempt.percent >= 50 %}ok{% else %}bad{% endif %}">
+                    {{ attempt.score }}/{{ attempt.max_score }}
+                    <small>{{ attempt.percent }}%</small>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

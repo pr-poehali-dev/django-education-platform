@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Тесты по информатике — КодГрад{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">Тесты <span class="gradient-text">с автопроверкой</span></h1>
+        <p class="page-desc">Варианты ЕГЭ, тематические и тренировочные тесты</p>
+    </div>
+</div>
+
+<div class="container section">
+    <!-- Filters -->
+    <div class="filter-tabs">
+        <a href="{% url 'test_list' %}" class="filter-tab {% if not test_type %}active{% endif %}">Все</a>
+        {% for val, label in test_types %}
+        <a href="?type={{ val }}" class="filter-tab {% if test_type == val %}active{% endif %}">{{ label }}</a>
+        {% endfor %}
+    </div>
+
+    <div class="tests-full-grid">
+        {% for test in tests %}
+        <div class="test-card-full">
+            <div class="test-card-head">
+                <span class="test-type-badge">{{ test.get_test_type_display }}</span>
+                {% if test.time_limit %}<span class="test-time">⏱ {{ test.time_limit }} мин</span>{% endif %}
+            </div>
+            <h3 class="test-title">{{ test.title }}</h3>
+            {% if test.description %}<p class="test-desc">{{ test.description|truncatechars:120 }}</p>{% endif %}
+            <div class="test-footer">
+                <div class="test-meta-row">
+                    <span>📝 {{ test.questions_count }} заданий</span>
+                    <span>👥 {{ test.attempts_count }} попыток</span>
+                    <span class="test-avg {% if test.avg_percent >= 70 %}good{% elif test.avg_percent >= 50 %}ok{% else %}bad{% endif %}">
+                        ср. {{ test.avg_percent }}%
+                    </span>
+                </div>
+                <a href="{% url 'test_detail' test.slug %}" class="btn btn-primary btn-sm">Начать →</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <p>Тестов пока нет. <a href="/admin/exams/test/add/">Добавить через админку →</a></p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

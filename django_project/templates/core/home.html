@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}КодГрад — Подготовка к ЕГЭ по информатике{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="container hero-inner">
+        <div class="hero-badge">🎯 Подготовка к ЕГЭ / ОГЭ · Формат ФИПИ</div>
+        <h1 class="hero-title">
+            Учись. Тестируйся.<br><span class="gradient-text">Поступай.</span>
+        </h1>
+        <p class="hero-desc">
+            Тысячи заданий из банка ФИПИ с мгновенной автопроверкой, подробными разборами и личной статистикой.
+        </p>
+        <div class="hero-actions">
+            <a href="{% url 'test_list' %}" class="btn btn-primary btn-lg">🚀 Начать тренировку</a>
+            <a href="{% url 'topic_list' %}" class="btn btn-outline btn-lg">📚 Темы ЕГЭ</a>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value gradient-text">{{ stats.topics }}+</span>
+                <span class="stat-label">Тем</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value gradient-text">{{ stats.tests }}+</span>
+                <span class="stat-label">Тестов</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value gradient-text">{{ stats.attempts }}+</span>
+                <span class="stat-label">Попыток</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value gradient-text">ФИПИ</span>
+                <span class="stat-label">Формат</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TOPICS -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Темы <span class="gradient-text">ЕГЭ</span></h2>
+            <a href="{% url 'topic_list' %}" class="section-link">Все темы →</a>
+        </div>
+        <div class="topics-grid">
+            {% for topic in topics %}
+            <a href="{% url 'topic_detail' topic.slug %}" class="topic-card">
+                <div class="topic-icon">{{ topic.icon }}</div>
+                <div class="topic-info">
+                    <div class="topic-fipi">Задание {{ topic.fipi_number }}</div>
+                    <h3 class="topic-title">{{ topic.title }}</h3>
+                    <p class="topic-count">{{ topic.questions_count }} заданий</p>
+                </div>
+                <span class="topic-arrow">→</span>
+            </a>
+            {% empty %}
+            <p class="empty-hint">Темы появятся после добавления через админку.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- TESTS -->
+<section class="section section-dark">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Варианты <span class="gradient-text">ЕГЭ</span></h2>
+            <a href="{% url 'test_list' %}?type=variant" class="section-link">Все варианты →</a>
+        </div>
+        <div class="tests-grid">
+            {% for test in recent_tests %}
+            <div class="test-card">
+                <div class="test-type-badge">{{ test.get_test_type_display }}</div>
+                <h3 class="test-title">{{ test.title }}</h3>
+                <p class="test-meta">
+                    📝 {{ test.questions_count }} заданий
+                    {% if test.time_limit %}· ⏱ {{ test.time_limit }} мин{% endif %}
+                </p>
+                <div class="test-stats">
+                    <span>{{ test.attempts_count }} попыток</span>
+                    <span class="test-avg {% if test.avg_percent >= 70 %}good{% elif test.avg_percent >= 50 %}ok{% else %}bad{% endif %}">
+                        ср. {{ test.avg_percent }}%
+                    </span>
+                </div>
+                <a href="{% url 'test_detail' test.slug %}" class="btn btn-primary btn-sm">Начать</a>
+            </div>
+            {% empty %}
+            <p class="empty-hint">Добавьте варианты через <a href="/admin/">админку</a>.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="section">
+    <div class="container">
+        <h2 class="section-title text-center">Почему <span class="gradient-text">КодГрад</span></h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Мгновенная проверка</h3>
+                <p>Результат сразу после ответа с подробным разбором решения</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Формат ФИПИ</h3>
+                <p>Все задания соответствуют реальным заданиям ЕГЭ из банка ФИПИ</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Личная статистика</h3>
+                <p>Аналитика по каждой теме, история попыток и динамика прогресса</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h3>Рейтинг</h3>
+                <p>Соревнуйся с другими учениками и поднимайся в общем рейтинге</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% if not user.is_authenticated %}
+<section class="section cta-section">
+    <div class="container">
+        <div class="cta-box">
+            <h2>Готов к ЕГЭ?</h2>
+            <p>Зарегистрируйся и начни подготовку прямо сейчас — это бесплатно</p>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg">Создать аккаунт</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Рейтинг — КодГрад{% endblock %}
+{% block content %}
+<div class="page-header">
+    <div class="container">
+        <h1 class="page-title">🏆 Рейтинг</h1>
+        <p class="page-desc">Лучшие ученики платформы</p>
+    </div>
+</div>
+<div class="container section">
+    <div class="leaderboard">
+        {% for u in top_users %}
+        <div class="lb-row {% if u == user %}lb-row-me{% endif %}">
+            <div class="lb-rank">
+                {% if forloop.counter == 1 %}🥇{% elif forloop.counter == 2 %}🥈{% elif forloop.counter == 3 %}🥉{% else %}{{ forloop.counter }}{% endif %}
+            </div>
+            <div class="lb-avatar">{{ u.first_name.0|default:u.username.0|upper }}</div>
+            <div class="lb-name">
+                <strong>{{ u.get_full_name|default:u.username }}</strong>
+                {% if u.grade %}<span class="lb-grade">{{ u.get_grade_display }}</span>{% endif %}
+            </div>
+            <div class="lb-score gradient-text">{{ u.total_score }} б.</div>
+            <div class="lb-tests">{{ u.tests_count }} тестов</div>
+            <div class="lb-avg {% if u.avg_score >= 70 %}good{% elif u.avg_score >= 50 %}ok{% else %}bad{% endif %}">
+                {{ u.avg_score }}%
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state"><p>Рейтинг пуст. Пройди первый тест!</p></div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

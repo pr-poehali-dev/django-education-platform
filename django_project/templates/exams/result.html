@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Результат — {{ attempt.test.title }}{% endblock %}
+
+{% block content %}
+<div class="container section">
+    <div class="result-hero">
+        <div class="result-icon">
+            {% if attempt.percent >= 85 %}🏆{% elif attempt.percent >= 65 %}👍{% elif attempt.percent >= 45 %}📚{% else %}😓{% endif %}
+        </div>
+        <h1 class="result-title">{{ attempt.grade_label }}</h1>
+        <div class="result-score">
+            <span class="result-score-num {% if attempt.percent >= 70 %}text-green{% elif attempt.percent >= 50 %}text-yellow{% else %}text-red{% endif %}">
+                {{ attempt.score }}
+            </span>
+            <span class="result-score-max">/ {{ attempt.max_score }}</span>
+        </div>
+        <div class="result-percent {% if attempt.percent >= 70 %}good{% elif attempt.percent >= 50 %}ok{% else %}bad{% endif %}">
+            {{ attempt.percent }}%
+        </div>
+        <div class="result-progress">
+            <div class="result-progress-fill {% if attempt.percent >= 70 %}good{% elif attempt.percent >= 50 %}ok{% else %}bad{% endif %}"
+                 style="width:{{ attempt.percent }}%"></div>
+        </div>
+        <p class="result-test-name">{{ attempt.test.title }}</p>
+        <div class="result-actions">
+            <a href="{% url 'test_start' attempt.test.slug %}" class="btn btn-primary">🔄 Пройти снова</a>
+            <a href="{% url 'test_list' %}" class="btn btn-outline">Все тесты</a>
+            {% if user.is_authenticated %}
+            <a href="{% url 'cabinet' %}" class="btn btn-ghost">📊 Мой кабинет</a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Detailed answers -->
+    <div class="result-answers">
+        <h2 class="result-answers-title">Разбор заданий</h2>
+        {% for answer in answers %}
+        <div class="answer-row {% if answer.is_correct %}correct{% else %}wrong{% endif %}">
+            <div class="answer-header">
+                <div class="answer-icon">{% if answer.is_correct %}✅{% else %}❌{% endif %}</div>
+                <div class="answer-meta">
+                    <span class="answer-topic">{{ answer.question.topic.icon }} {{ answer.question.topic.fipi_number }} — {{ answer.question.topic.title }}</span>
+                    <span class="answer-points">+{{ answer.points_earned }} / {{ answer.question.points }} б.</span>
+                </div>
+            </div>
+            <div class="answer-question">{{ answer.question.text }}</div>
+
+            {% if answer.question.code_snippet %}
+            <pre class="code-block code-sm"><code>{{ answer.question.code_snippet }}</code></pre>
+            {% endif %}
+
+            {% if answer.question.question_type in 'single,multiple' %}
+            <div class="answer-choices">
+                {% for choice in answer.question.choices.all %}
+                <div class="answer-choice
+                    {% if choice.is_correct %}correct{% endif %}
+                    {% if choice in answer.selected_choices.all and not choice.is_correct %}wrong{% endif %}">
+                    {{ choice.text }}
+                    {% if choice.is_correct %}<span class="badge-correct">✓ Верно</span>{% endif %}
+                    {% if choice in answer.selected_choices.all and not choice.is_correct %}<span class="badge-wrong">✗ Ваш ответ</span>{% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-answer-result">
+                <span>Ваш ответ: <strong>{{ answer.text_answer }}</strong></span>
+            </div>
+            {% endif %}
+
+            {% if answer.question.explanation %}
+            <div class="answer-explanation">💡 {{ answer.question.explanation }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
