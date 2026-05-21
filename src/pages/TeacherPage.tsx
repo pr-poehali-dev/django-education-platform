@@ -18,16 +18,38 @@ const Q_TYPES = [
   { val: 'choice', label: 'Выбор из вариантов' },
 ];
 
+interface DraftFile {
+  name: string; size: number; type: string; dataUrl: string;
+}
+
 interface DraftQ {
   id: number; number: number; text: string; code: string;
   type: string; answer: string; explanation: string;
   tableRows: number; tableCols: number;
   choices: { text: string; is_correct: boolean }[];
+  files: DraftFile[];
 }
 
 function makeQ(n: number): DraftQ {
-  return { id: n, number: n, text: '', code: '', type: 'text', answer: '', explanation: '', tableRows: 2, tableCols: 2, choices: [{ text: '', is_correct: true }, { text: '', is_correct: false }, { text: '', is_correct: false }, { text: '', is_correct: false }] };
+  return { id: n, number: n, text: '', code: '', type: 'text', answer: '', explanation: '', tableRows: 2, tableCols: 2, choices: [{ text: '', is_correct: true }, { text: '', is_correct: false }, { text: '', is_correct: false }, { text: '', is_correct: false }], files: [] };
 }
+
+function formatSize(bytes: number): string {
+  if (bytes < 1024) return bytes + ' Б';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' КБ';
+  return (bytes / 1024 / 1024).toFixed(2) + ' МБ';
+}
+
+function fileIcon(type: string): string {
+  if (type.startsWith('image/')) return 'Image';
+  if (type.includes('pdf')) return 'FileText';
+  if (type.includes('zip') || type.includes('rar') || type.includes('archive')) return 'Archive';
+  if (type.includes('sheet') || type.includes('excel') || type.includes('csv')) return 'Sheet';
+  if (type.startsWith('text/') || type.includes('json')) return 'FileCode';
+  return 'File';
+}
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export default function TeacherPage({ onNavigate }: Props) {
   const [tab, setTab] = useState<Tab>('variants');
@@ -35,6 +57,7 @@ export default function TeacherPage({ onNavigate }: Props) {
   const [questions, setQuestions] = useState<DraftQ[]>(Array.from({ length: 27 }, (_, i) => makeQ(i + 1)));
   const [activeQ, setActiveQ] = useState(1);
   const [saved, setSaved] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const user = getUser();
 
   if (!user || user.role === 'student') {
@@ -54,6 +77,28 @@ export default function TeacherPage({ onNavigate }: Props) {
   const q = questions.find(x => x.number === activeQ)!;
   const updateQ = (field: string, val: unknown) =>
     setQuestions(qs => qs.map(x => x.number === activeQ ? { ...x, [field]: val } : x));
+
+  const handleFiles = (fileList: FileList | null) => {
+    if (!fileList) return;
+    setUploadError('');
+    const arr = Array.from(fileList);
+    const tooBig = arr.find(f => f.size > MAX_FILE_SIZE);
+    if (tooBig) {
+      setUploadError(`Файл "${tooBig.name}" превышает 10 МБ`);
+      return;
+    }
+    Promise.all(arr.map(f => new Promise<DraftFile>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ name: f.name, size: f.size, type: f.type, dataUrl: reader.result as string });
+      reader.onerror = reject;
+      reader.readAsDataURL(f);
+    }))).then(newFiles => {
+      updateQ('files', [...q.files, ...newFiles]);
+    });
+  };
+  const removeFile = (idx: number) => {
+    updateQ('files', q.files.filter((_, i) => i !== idx));
+  };
 
   const handlePublish = () => {
     setSaved(true);
@@ -230,6 +275,59 @@ export default function TeacherPage({ onNavigate }: Props) {
                     </div>
                   </div>
                 )}
+
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-medium text-gray-600">
+                      Прикреплённые файлы {q.files.length > 0 && <span className="text-gray-400">· {q.files.length}</span>}
+                    </label>
+                    <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 border border-blue-200 bg-blue-50 text-blue-700 text-xs font-medium rounded-lg hover:bg-blue-100 transition-colors">
+                      <Icon name="Paperclip" size={13} /> Добавить файлы
+                      <input type="file" multiple className="hidden"
+                        onChange={e => { handleFiles(e.target.files); e.target.value = ''; }} />
+                    </label>
+                  </div>
+                  <p className="text-xs text-gray-400 mb-2">Изображения, PDF, таблицы, архивы и др. До 10 МБ на файл.</p>
+
+                  {uploadError && (
+                    <div className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2 mb-2">{uploadError}</div>
+                  )}
+
+                  {q.files.length === 0 ? (
+                    <label className="block cursor-pointer border-2 border-dashed border-gray-200 rounded-lg px-4 py-5 text-center text-xs text-gray-400 hover:border-blue-300 hover:text-blue-600 transition-colors">
+                      <Icon name="Upload" size={18} className="mx-auto mb-1" />
+                      Нажмите или перетащите файлы сюда
+                      <input type="file" multiple className="hidden"
+                        onChange={e => { handleFiles(e.target.files); e.target.value = ''; }} />
+                    </label>
+                  ) : (
+                    <div className="space-y-1.5">
+                      {q.files.map((f, fi) => (
+                        <div key={fi} className="flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50">
+                          {f.type.startsWith('image/') ? (
+                            <img src={f.dataUrl} alt={f.name} className="w-9 h-9 object-cover rounded border border-gray-200 flex-shrink-0" />
+                          ) : (
+                            <div className="w-9 h-9 flex items-center justify-center rounded bg-white border border-gray-200 text-gray-500 flex-shrink-0">
+                              <Icon name={fileIcon(f.type)} fallback="File" size={16} />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm text-gray-800 truncate">{f.name}</div>
+                            <div className="text-xs text-gray-400">{formatSize(f.size)}</div>
+                          </div>
+                          <a href={f.dataUrl} download={f.name}
+                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-white rounded transition-colors" title="Скачать">
+                            <Icon name="Download" size={14} />
+                          </a>
+                          <button onClick={() => removeFile(fi)}
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-white rounded transition-colors" title="Удалить">
+                            <Icon name="Trash2" size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">Разбор решения (необязательно)</label>
