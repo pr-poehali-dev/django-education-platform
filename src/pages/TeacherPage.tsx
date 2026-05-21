@@ -19,7 +19,9 @@ const Q_TYPES = [
 ];
 
 interface DraftFile {
-  name: string; size: number; type: string; dataUrl: string;
+  name: string; size: number; type: string;
+  url?: string; dataUrl?: string;
+  uploading?: boolean; error?: string;
 }
 
 interface DraftQ {
@@ -33,6 +35,10 @@ interface DraftQ {
 function makeQ(n: number): DraftQ {
   return { id: n, number: n, text: '', code: '', type: 'text', answer: '', explanation: '', tableRows: 2, tableCols: 2, choices: [{ text: '', is_correct: true }, { text: '', is_correct: false }, { text: '', is_correct: false }, { text: '', is_correct: false }], files: [] };
 }
+
+const UPLOAD_URL = 'https://functions.poehali.dev/da2f462a-1bf7-4c8c-b89a-3a531802107a';
+
+type VariantMode = 'full' | 'topic';
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' Б';
@@ -54,7 +60,12 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 export default function TeacherPage({ onNavigate }: Props) {
   const [tab, setTab] = useState<Tab>('variants');
   const [title, setTitle] = useState('');
+  const [mode, setMode] = useState<VariantMode>('full');
+  const [topicNum, setTopicNum] = useState(15);
+  const [topicCount, setTopicCount] = useState(5);
   const [questions, setQuestions] = useState<DraftQ[]>(Array.from({ length: 27 }, (_, i) => makeQ(i + 1)));
+  const [topicTasks, setTopicTasks] = useState<DraftQ[]>(Array.from({ length: 10 }, (_, i) => makeQ(i + 1)));
+  const [activeTopic, setActiveTopic] = useState(1);
   const [activeQ, setActiveQ] = useState(1);
   const [saved, setSaved] = useState(false);
   const [uploadError, setUploadError] = useState('');
@@ -74,9 +85,18 @@ export default function TeacherPage({ onNavigate }: Props) {
     );
   }
 
-  const q = questions.find(x => x.number === activeQ)!;
-  const updateQ = (field: string, val: unknown) =>
-    setQuestions(qs => qs.map(x => x.number === activeQ ? { ...x, [field]: val } : x));
+  const isTopic = mode === 'topic';
+  const q = isTopic
+    ? topicTasks.find(x => x.number === activeTopic)!
+    : questions.find(x => x.number === activeQ)!;
+
+  const updateQ = (field: string, val: unknown) => {
+    if (isTopic) {
+      setTopicTasks(ts => ts.map(x => x.number === activeTopic ? { ...x, [field]: val } : x));
+    } else {
+      setQuestions(qs => qs.map(x => x.number === activeQ ? { ...x, [field]: val } : x));
+    }
+  };
 
   const handleFiles = (fileList: FileList | null) => {
     if (!fileList) return;
@@ -87,13 +107,46 @@ export default function TeacherPage({ onNavigate }: Props) {
       setUploadError(`Файл "${tooBig.name}" превышает 10 МБ`);
       return;
     }
-    Promise.all(arr.map(f => new Promise<DraftFile>((resolve, reject) => {
+    const qNum = isTopic ? activeTopic : activeQ;
+    const inTopic = isTopic;
+    arr.forEach(file => {
       const reader = new FileReader();
-      reader.onload = () => resolve({ name: f.name, size: f.size, type: f.type, dataUrl: reader.result as string });
-      reader.onerror = reject;
-      reader.readAsDataURL(f);
-    }))).then(newFiles => {
-      updateQ('files', [...q.files, ...newFiles]);
+      reader.onload = async () => {
+        const dataUrl = reader.result as string;
+        const placeholder: DraftFile = {
+          name: file.name, size: file.size, type: file.type,
+          dataUrl, uploading: true,
+        };
+        let insertedAt = -1;
+        const updater = (x: DraftQ) => {
+          if (x.number !== qNum) return x;
+          insertedAt = x.files.length;
+          return { ...x, files: [...x.files, placeholder] };
+        };
+        if (inTopic) setTopicTasks(ts => ts.map(updater));
+        else setQuestions(qs => qs.map(updater));
+        const applyPatch = (patch: Partial<DraftFile>) => {
+          const upd = (x: DraftQ) => x.number === qNum
+            ? { ...x, files: x.files.map((f, i) => i === insertedAt ? { ...f, ...patch } : f) }
+            : x;
+          if (inTopic) setTopicTasks(ts => ts.map(upd));
+          else setQuestions(qs => qs.map(upd));
+        };
+        try {
+          const base64 = dataUrl.split(',')[1] || '';
+          const res = await fetch(UPLOAD_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: file.name, contentType: file.type, data: base64 }),
+          });
+          if (!res.ok) throw new Error('upload failed');
+          const json = await res.json();
+          applyPatch({ url: json.url, uploading: false });
+        } catch {
+          applyPatch({ uploading: false, error: 'Не удалось загрузить' });
+        }
+      };
+      reader.readAsDataURL(file);
     });
   };
   const removeFile = (idx: number) => {
@@ -172,40 +225,95 @@ export default function TeacherPage({ onNavigate }: Props) {
       {/* Create variant */}
       {tab === 'create' && (
         <div className="animate-fade-in">
-          {/* Title */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5">
+          {/* Title + mode */}
+          <div className="bg-white border border-gray-200 rounded-xl p-5 mb-5 space-y-4">
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-1.5">Тип варианта</label>
+              <div className="inline-flex p-1 bg-gray-100 rounded-lg">
+                <button onClick={() => { setMode('full'); setActiveQ(1); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${mode === 'full' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                  Полный вариант (27 заданий)
+                </button>
+                <button onClick={() => { setMode('topic'); setActiveQ(topicNum); }}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${mode === 'topic' ? 'bg-white text-blue-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}>
+                  Тематический (одно задание)
+                </button>
+              </div>
+            </div>
+
             <div className="flex gap-5 items-end flex-wrap">
               <div className="flex-1 min-w-48">
                 <label className="block text-xs font-medium text-gray-600 mb-1.5">Название варианта *</label>
-                <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Например: Авторский вариант #1"
+                <input value={title} onChange={e => setTitle(e.target.value)}
+                  placeholder={mode === 'topic' ? `Например: Задание ${topicNum} — подборка` : 'Например: Авторский вариант #1'}
                   className="w-full px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-100" />
               </div>
+
+              {mode === 'topic' && (
+                <>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Номер задания</label>
+                    <select value={topicNum}
+                      onChange={e => { const v = +e.target.value; setTopicNum(v); setActiveQ(v); }}
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-600 bg-white">
+                      {Array.from({ length: 27 }, (_, i) => i + 1).map(n => (
+                        <option key={n} value={n}>Задание {n}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-600 mb-1.5">Количество задач</label>
+                    <select value={topicCount} onChange={e => setTopicCount(+e.target.value)}
+                      className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-blue-600 bg-white">
+                      {[3,4,5,6,7,8,9,10].map(n => <option key={n} value={n}>{n} задач</option>)}
+                    </select>
+                  </div>
+                </>
+              )}
+
               <div className="text-sm text-gray-500">
-                Заполнено: <strong>{questions.filter(x => x.text.trim()).length}</strong> / 27 заданий
+                {mode === 'full' ? (
+                  <>Заполнено: <strong>{questions.filter(x => x.text.trim()).length}</strong> / 27 заданий</>
+                ) : (
+                  <>Задача <strong>{Math.min(questions.filter(x => x.text.trim()).length, topicCount)}</strong> / {topicCount} по заданию №{topicNum}</>
+                )}
               </div>
             </div>
           </div>
 
           <div className="flex gap-5">
-            {/* Question list sidebar */}
+            {/* Sidebar */}
             <div className="w-16 flex-shrink-0">
               <div className="flex flex-col gap-1">
-                {questions.map(qi => {
-                  const filled = qi.text.trim() !== '';
-                  const isActive = qi.number === activeQ;
-                  return (
-                    <button key={qi.number} onClick={() => setActiveQ(qi.number)}
-                      className={`q-dot ${isActive ? 'q-dot-active' : filled ? 'q-dot-answered' : 'q-dot-empty'}`}>
-                      {qi.number}
-                    </button>
-                  );
-                })}
+                {isTopic
+                  ? topicTasks.slice(0, topicCount).map(qi => {
+                      const filled = qi.text.trim() !== '';
+                      const isActive = qi.number === activeTopic;
+                      return (
+                        <button key={qi.number} onClick={() => setActiveTopic(qi.number)}
+                          className={`q-dot ${isActive ? 'q-dot-active' : filled ? 'q-dot-answered' : 'q-dot-empty'}`}>
+                          {qi.number}
+                        </button>
+                      );
+                    })
+                  : questions.map(qi => {
+                      const filled = qi.text.trim() !== '';
+                      const isActive = qi.number === activeQ;
+                      return (
+                        <button key={qi.number} onClick={() => setActiveQ(qi.number)}
+                          className={`q-dot ${isActive ? 'q-dot-active' : filled ? 'q-dot-answered' : 'q-dot-empty'}`}>
+                          {qi.number}
+                        </button>
+                      );
+                    })}
               </div>
             </div>
 
             {/* Question editor */}
             <div className="flex-1 bg-white border border-gray-200 rounded-xl p-6">
-              <h3 className="text-sm font-semibold text-gray-900 mb-4">Задание {activeQ}</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-4">
+                {isTopic ? `Задание №${topicNum} · задача ${activeTopic} из ${topicCount}` : `Задание ${activeQ}`}
+              </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1.5">Текст задания *</label>
@@ -303,9 +411,9 @@ export default function TeacherPage({ onNavigate }: Props) {
                   ) : (
                     <div className="space-y-1.5">
                       {q.files.map((f, fi) => (
-                        <div key={fi} className="flex items-center gap-3 px-3 py-2 border border-gray-200 rounded-lg bg-gray-50">
-                          {f.type.startsWith('image/') ? (
-                            <img src={f.dataUrl} alt={f.name} className="w-9 h-9 object-cover rounded border border-gray-200 flex-shrink-0" />
+                        <div key={fi} className={`flex items-center gap-3 px-3 py-2 border rounded-lg ${f.error ? 'border-red-200 bg-red-50' : 'border-gray-200 bg-gray-50'}`}>
+                          {f.type.startsWith('image/') && (f.url || f.dataUrl) ? (
+                            <img src={f.url || f.dataUrl} alt={f.name} className="w-9 h-9 object-cover rounded border border-gray-200 flex-shrink-0" />
                           ) : (
                             <div className="w-9 h-9 flex items-center justify-center rounded bg-white border border-gray-200 text-gray-500 flex-shrink-0">
                               <Icon name={fileIcon(f.type)} fallback="File" size={16} />
@@ -313,12 +421,19 @@ export default function TeacherPage({ onNavigate }: Props) {
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="text-sm text-gray-800 truncate">{f.name}</div>
-                            <div className="text-xs text-gray-400">{formatSize(f.size)}</div>
+                            <div className="text-xs text-gray-400 flex items-center gap-2">
+                              <span>{formatSize(f.size)}</span>
+                              {f.uploading && <span className="text-blue-600 flex items-center gap-1"><Icon name="Loader2" size={11} className="animate-spin" /> Загрузка…</span>}
+                              {f.url && !f.uploading && <span className="text-green-600 flex items-center gap-1"><Icon name="CheckCircle2" size={11} /> В облаке</span>}
+                              {f.error && <span className="text-red-600">{f.error}</span>}
+                            </div>
                           </div>
-                          <a href={f.dataUrl} download={f.name}
-                            className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-white rounded transition-colors" title="Скачать">
-                            <Icon name="Download" size={14} />
-                          </a>
+                          {f.url && (
+                            <a href={f.url} target="_blank" rel="noreferrer"
+                              className="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-white rounded transition-colors" title="Открыть">
+                              <Icon name="ExternalLink" size={14} />
+                            </a>
+                          )}
                           <button onClick={() => removeFile(fi)}
                             className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-white rounded transition-colors" title="Удалить">
                             <Icon name="Trash2" size={14} />
@@ -338,17 +453,36 @@ export default function TeacherPage({ onNavigate }: Props) {
 
                 <div className="flex gap-2 justify-between items-center pt-2 border-t border-gray-100">
                   <div className="flex gap-2">
-                    {activeQ > 1 && (
-                      <button onClick={() => setActiveQ(activeQ - 1)}
-                        className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                        ← Задание {activeQ - 1}
-                      </button>
-                    )}
-                    {activeQ < 27 && (
-                      <button onClick={() => setActiveQ(activeQ + 1)}
-                        className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
-                        Задание {activeQ + 1} →
-                      </button>
+                    {isTopic ? (
+                      <>
+                        {activeTopic > 1 && (
+                          <button onClick={() => setActiveTopic(activeTopic - 1)}
+                            className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                            ← Задача {activeTopic - 1}
+                          </button>
+                        )}
+                        {activeTopic < topicCount && (
+                          <button onClick={() => setActiveTopic(activeTopic + 1)}
+                            className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                            Задача {activeTopic + 1} →
+                          </button>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {activeQ > 1 && (
+                          <button onClick={() => setActiveQ(activeQ - 1)}
+                            className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                            ← Задание {activeQ - 1}
+                          </button>
+                        )}
+                        {activeQ < 27 && (
+                          <button onClick={() => setActiveQ(activeQ + 1)}
+                            className="flex items-center gap-1 px-3 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors">
+                            Задание {activeQ + 1} →
+                          </button>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -361,9 +495,11 @@ export default function TeacherPage({ onNavigate }: Props) {
               Сохранить черновик
             </button>
             <button onClick={handlePublish}
-              disabled={!title.trim() || questions.filter(x => x.text.trim()).length < 10}
+              disabled={!title.trim() || (isTopic
+                ? topicTasks.slice(0, topicCount).filter(x => x.text.trim()).length < topicCount
+                : questions.filter(x => x.text.trim()).length < 10)}
               className="px-5 py-2.5 bg-blue-700 text-white text-sm font-medium rounded-lg hover:bg-blue-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center gap-2">
-              <Icon name="Send" size={15} /> Опубликовать вариант
+              <Icon name="Send" size={15} /> Опубликовать {isTopic ? 'тематический вариант' : 'вариант'}
             </button>
           </div>
         </div>

@@ -1,0 +1,36 @@
+{
+  "tests": [
+    {
+      "name": "CORS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Missing data returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {"name": "test.txt", "contentType": "text/plain"},
+      "expectedStatus": 400
+    },
+    {
+      "name": "Upload small text file",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "hello.txt",
+        "contentType": "text/plain",
+        "data": "SGVsbG8sIHdvcmxkIQ=="
+      },
+      "expectedStatus": 200,
+      "expectedBody": {"name": "hello.txt", "size": 13},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Reject method GET",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 405
+    }
+  ]
+}
